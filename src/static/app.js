@@ -13,6 +13,16 @@ document.addEventListener("DOMContentLoaded", () => {
       // Clear loading message
       activitiesList.innerHTML = "";
 
+      // Helper to escape HTML in participant entries
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
       // Populate activities list
       Object.entries(activities).forEach(([name, details]) => {
         const activityCard = document.createElement("div");
@@ -20,11 +30,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const spotsLeft = details.max_participants - details.participants.length;
 
+        // Build participants markup
+        let participantsMarkup;
+        if (Array.isArray(details.participants) && details.participants.length > 0) {
+          const items = details.participants
+            .map((p) => `<li class="participant">${escapeHtml(p)}</li>`)
+            .join("");
+          participantsMarkup = `
+            <div class="participants-section">
+              <h5>Participants</h5>
+              <ul class="participants-list">
+                <div class="participant-wrap">${items}</div>
+              </ul>
+            </div>
+          `;
+        } else {
+          participantsMarkup = `
+            <div class="participants-section">
+              <h5>Participants</h5>
+              <div class="no-participants">No participants yet</div>
+            </div>
+          `;
+        }
+
         activityCard.innerHTML = `
           <h4>${name}</h4>
           <p>${details.description}</p>
           <p><strong>Schedule:</strong> ${details.schedule}</p>
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
+          ${participantsMarkup}
         `;
 
         activitiesList.appendChild(activityCard);
